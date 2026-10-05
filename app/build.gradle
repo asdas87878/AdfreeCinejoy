@@ -6,12 +6,19 @@ if (cfgFile.exists()) cfgFile.withInputStream { cfg.load(it) }
 def startUrl = (cfg.getProperty('start_url') ?: '').trim().replace('"', '')
 def appName = (cfg.getProperty('app_name') ?: 'Ad-free Viewer').trim()
 def geckoVersion = project.findProperty('geckoVersion') ?: '+'
-def sdk = Integer.parseInt((project.findProperty('compileSdkVersion') ?: '37').toString())
+def sdkParts = (project.findProperty('compileSdkVersion') ?: '37.1').toString().tokenize('.')
+def sdkMajor = Integer.parseInt(sdkParts[0])
+def sdkMinor = sdkParts.size() > 1 ? Integer.parseInt(sdkParts[1]) : 0
 def runNumber = Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '1')
 
 android {
     namespace 'com.adfree.viewer'
-    compileSdk sdk
+    // GeckoView needs a minor SDK release (e.g. 37.1). Use the new DSL, fall back to the legacy string form.
+    try {
+        compileSdk { version = release(sdkMajor) { minorApiLevel = sdkMinor } }
+    } catch (Throwable ignored) {
+        compileSdkVersion sdkMinor > 0 ? "android-${sdkMajor}.${sdkMinor}" : "android-${sdkMajor}"
+    }
 
     defaultConfig {
         applicationId 'com.adfree.viewer'
