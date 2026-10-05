@@ -1,0 +1,7 @@
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+# uBlock Origin is downloaded fresh at build time
+app/src/main/assets/ublock/
