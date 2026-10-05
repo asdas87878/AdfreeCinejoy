@@ -6,11 +6,12 @@ if (cfgFile.exists()) cfgFile.withInputStream { cfg.load(it) }
 def startUrl = (cfg.getProperty('start_url') ?: '').trim().replace('"', '')
 def appName = (cfg.getProperty('app_name') ?: 'Ad-free Viewer').trim()
 def geckoVersion = project.findProperty('geckoVersion') ?: '+'
+def sdk = Integer.parseInt((project.findProperty('compileSdkVersion') ?: '37').toString())
 def runNumber = Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '1')
 
 android {
     namespace 'com.adfree.viewer'
-    compileSdk 36
+    compileSdk sdk
 
     defaultConfig {
         applicationId 'com.adfree.viewer'
@@ -53,7 +54,10 @@ android {
         ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
 
-    buildFeatures { buildConfig true }
+    buildFeatures {
+        buildConfig true
+        resValues true
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

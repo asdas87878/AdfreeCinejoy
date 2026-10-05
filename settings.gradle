@@ -1,5 +1,8 @@
 pluginManagement {
+    // Latest stable AGP is passed in by the CI workflow; this is the fallback.
+    def agp = providers.gradleProperty('agpVersion').getOrElse('9.1.0')
     repositories { google(); mavenCentral(); gradlePluginPortal() }
+    plugins { id 'com.android.application' version agp }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)

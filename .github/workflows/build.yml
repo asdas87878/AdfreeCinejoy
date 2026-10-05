@@ -22,9 +22,18 @@ jobs:
       - name: Accept Android SDK licenses
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
 
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Find latest stable build tools
+        run: |
+          G=$(curl -fsSL https://services.gradle.org/versions/current | grep -o '"version" *: *"[^"]*"' | cut -d'"' -f4)
+          A=$(curl -fsSL https://dl.google.com/android/maven2/com/android/tools/build/gradle/maven-metadata.xml \
+              | grep -o '<version>[0-9]*\.[0-9]*\.[0-9]*</version>' | sed 's/<[^>]*>//g' | sort -V | tail -1)
+          echo "Gradle $G, Android Gradle Plugin $A"
+          echo "GRADLE_VERSION=$G" >> "$GITHUB_ENV"
+          echo "AGP_VERSION=$A" >> "$GITHUB_ENV"
+
+      - uses: gradle/actions/setup-gradle@v5
         with:
-          gradle-version: '8.14.3'
+          gradle-version: ${{ env.GRADLE_VERSION }}
 
       - name: Find latest GeckoView (Firefox engine)
         run: |
@@ -48,7 +57,7 @@ jobs:
       - name: Build
         run: |
           set -o pipefail
-          gradle --no-daemon assembleRelease -PgeckoVersion="${GECKO_VERSION:-+}" 2>&1 | tee build.log || {
+          gradle --no-daemon assembleRelease -PgeckoVersion="${GECKO_VERSION:-+}" -PagpVersion="$AGP_VERSION" 2>&1 | tee build.log || {
             MSG=$(grep -E -A3 "What went wrong|error:|Could not|requires|incompatible" build.log | head -60 \
                   | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"} {print}')
             echo "::error title=Gradle build failed::$MSG"
