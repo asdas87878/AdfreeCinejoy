@@ -56,6 +56,11 @@ android {
         }
     }
 
+    // Store the engine's native code compressed: much smaller download, same app.
+    packaging {
+        jniLibs { useLegacyPackaging = true }
+    }
+
     // Keep uBlock's "_locales" folder: by default Android drops asset folders starting with "_".
     androidResources {
         ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
